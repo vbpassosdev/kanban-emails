@@ -1,9 +1,16 @@
 import {
+  AlterarSenhaDto,
+  AtualizarRemetenteDto,
+  AtualizarUsuarioDto,
+  CriarRemetenteDto,
   EmailKanban,
   EmailKanbanDetalhe,
   FiltroEmails,
   LoginResponse,
+  RemetenteMonitorado,
+  SalvarConfiguracaoEmailDto,
   StatusKanban,
+  Usuario,
 } from '@/types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000';
@@ -85,5 +92,66 @@ export const api = {
 
   downloadAnexoUrl(id: number): string {
     return `${BASE_URL}/api/anexos/${id}/download`;
+  },
+
+  // Remetentes Monitorados
+  listarRemetentes(): Promise<RemetenteMonitorado[]> {
+    return fetchJson<RemetenteMonitorado[]>('/api/remetentes-monitorados');
+  },
+
+  criarRemetente(dto: CriarRemetenteDto): Promise<RemetenteMonitorado> {
+    return fetchJson<RemetenteMonitorado>('/api/remetentes-monitorados', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  },
+
+  atualizarRemetente(id: number, dto: AtualizarRemetenteDto): Promise<void> {
+    return fetchJson<void>(`/api/remetentes-monitorados/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  },
+
+  excluirRemetente(id: number): Promise<void> {
+    return fetchJson<void>(`/api/remetentes-monitorados/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Usuários
+  listarUsuarios(): Promise<Usuario[]> {
+    return fetchJson<Usuario[]>('/api/usuarios');
+  },
+
+  obterPerfil(id: number): Promise<Usuario> {
+    return fetchJson<Usuario>(`/api/usuarios/${id}`);
+  },
+
+  atualizarUsuario(id: number, dto: AtualizarUsuarioDto): Promise<void> {
+    return fetchJson<void>(`/api/usuarios/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  },
+
+  alterarSenha(id: number, dto: AlterarSenhaDto): Promise<void> {
+    return fetchJson<void>(`/api/usuarios/${id}/senha`, {
+      method: 'PATCH',
+      body: JSON.stringify(dto),
+    });
+  },
+
+  salvarConfiguracaoEmail(id: number, dto: SalvarConfiguracaoEmailDto): Promise<void> {
+    return fetchJson<void>(`/api/usuarios/${id}/configuracao-email`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  },
+
+  toggleAtivo(id: number, ativo: boolean): Promise<void> {
+    return fetchJson<void>(`/api/usuarios/${id}/ativo?ativo=${ativo}`, {
+      method: 'PATCH',
+    });
   },
 };

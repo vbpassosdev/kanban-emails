@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { RefreshCw, Search, X, LogOut, User } from 'lucide-react';
+import Link from 'next/link';
+import { RefreshCw, Search, X, LogOut, User, Settings } from 'lucide-react';
 import {
   EmailKanban,
   FiltroEmails,
@@ -148,6 +149,13 @@ export default function KanbanBoard() {
               <User size={14} className="text-gray-400" />
               <span className="max-w-32 truncate">{user.nome}</span>
             </div>
+            <Link
+              href="/configuracoes/perfil"
+              title="Configurações"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg text-sm transition-colors"
+            >
+              <Settings size={14} />
+            </Link>
             <button
               onClick={logout}
               title="Sair"

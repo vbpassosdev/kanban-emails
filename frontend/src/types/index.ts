@@ -112,3 +112,66 @@ export interface LoginResponse {
   expiracao: string;
   usuario: LoginUsuario;
 }
+
+// Remetentes Monitorados
+export interface RemetenteMonitorado {
+  id: number;
+  nome: string | null;
+  emailOuDominio: string;
+  ativo: boolean;
+  dataCriacao: string;
+}
+
+export interface CriarRemetenteDto {
+  emailOuDominio: string;
+  nome?: string;
+}
+
+export interface AtualizarRemetenteDto {
+  emailOuDominio: string;
+  nome?: string;
+  ativo: boolean;
+}
+
+// Usuários
+export interface ConfiguracaoEmail {
+  id: number;
+  host: string;
+  porta: number;
+  usarSsl: boolean;
+  emailUsuario: string;
+  pasta: string;
+  intervaloMinutos: number;
+  dataCriacao: string;
+  dataAtualizacao: string | null;
+}
+
+export interface Usuario {
+  id: number;
+  nome: string;
+  email: string;
+  ativo: boolean;
+  dataCriacao: string;
+  dataAtualizacao: string | null;
+  configuracaoEmail: ConfiguracaoEmail | null;
+}
+
+export interface AtualizarUsuarioDto {
+  nome: string;
+  email: string;
+}
+
+export interface AlterarSenhaDto {
+  senhaAtual: string;
+  novaSenha: string;
+}
+
+export interface SalvarConfiguracaoEmailDto {
+  host: string;
+  porta: number;
+  usarSsl: boolean;
+  emailUsuario: string;
+  senha: string;
+  pasta: string;
+  intervaloMinutos: number;
+}
