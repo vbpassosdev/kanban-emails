@@ -10,6 +10,8 @@ public class KanbanEmailsDbContext(DbContextOptions<KanbanEmailsDbContext> optio
     public DbSet<EmailAnexo> EmailAnexos => Set<EmailAnexo>();
     public DbSet<EmailKanbanHistorico> EmailKanbanHistoricos => Set<EmailKanbanHistorico>();
     public DbSet<EmailRemetenteMonitorado> EmailRemetentesMonitorados => Set<EmailRemetenteMonitorado>();
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+    public DbSet<ConfiguracaoEmail> ConfiguracoesEmail => Set<ConfiguracaoEmail>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -17,5 +19,7 @@ public class KanbanEmailsDbContext(DbContextOptions<KanbanEmailsDbContext> optio
         modelBuilder.ApplyConfiguration(new EmailAnexoConfiguration());
         modelBuilder.ApplyConfiguration(new EmailKanbanHistoricoConfiguration());
         modelBuilder.ApplyConfiguration(new EmailRemetenteMonitoradoConfiguration());
+        modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
+        modelBuilder.ApplyConfiguration(new ConfiguracaoEmailConfiguration());
     }
 }
