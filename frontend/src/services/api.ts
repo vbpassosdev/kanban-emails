@@ -24,7 +24,7 @@ async function fetchJson<T>(path: string, init?: RequestInit, skipAuth = false):
     ...init,
   });
 
-  if (res.status === 401 && typeof window !== 'undefined') {
+  if (!skipAuth && res.status === 401 && typeof window !== 'undefined') {
     localStorage.removeItem('auth-token');
     localStorage.removeItem('auth-user');
     document.cookie = 'auth-token=; path=/; max-age=0';
