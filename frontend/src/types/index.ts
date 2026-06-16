@@ -99,3 +99,16 @@ export interface FiltroEmails {
   dataInicio?: string;
   dataFim?: string;
 }
+
+export interface LoginUsuario {
+  id: number;
+  nome: string;
+  email: string;
+  ativo: boolean;
+}
+
+export interface LoginResponse {
+  token: string;
+  expiracao: string;
+  usuario: LoginUsuario;
+}

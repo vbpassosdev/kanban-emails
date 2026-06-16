@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { RefreshCw, Search, X } from 'lucide-react';
+import { RefreshCw, Search, X, LogOut, User } from 'lucide-react';
 import {
   EmailKanban,
   FiltroEmails,
@@ -11,18 +11,17 @@ import {
   STATUS_LABELS,
 } from '@/types';
 import { api } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import KanbanColumn from './KanbanColumn';
 import EmailDetailModal from './EmailDetailModal';
 
-interface Props {
-  emailsIniciais: EmailKanban[];
-}
+export default function KanbanBoard() {
+  const { user, logout } = useAuth();
 
-export default function KanbanBoard({ emailsIniciais }: Props) {
-  const [emails, setEmails] = useState<EmailKanban[]>(emailsIniciais);
+  const [emails, setEmails] = useState<EmailKanban[]>([]);
   const [emailSelecionado, setEmailSelecionado] = useState<number | null>(null);
   const [sincronizando, setSincronizando] = useState(false);
-  const [carregando, setCarregando] = useState(false);
+  const [carregando, setCarregando] = useState(true);
   const [filtro, setFiltro] = useState<FiltroEmails>({});
   const [filtroVisivel, setFiltroVisivel] = useState(false);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -37,10 +36,17 @@ export default function KanbanBoard({ emailsIniciais }: Props) {
     try {
       const dados = await api.listarEmails(f ?? filtro);
       setEmails(dados);
+    } catch {
+      // Erros 401 são tratados globalmente em api.ts (redireciona para /login)
     } finally {
       setCarregando(false);
     }
   }, [filtro]);
+
+  useEffect(() => {
+    recarregar({});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sincronizar = async () => {
     setSincronizando(true);
@@ -66,7 +72,6 @@ export default function KanbanBoard({ emailsIniciais }: Props) {
     const email = emails.find((e) => e.id === id);
     if (!email || email.status === novoStatus) return;
 
-    // Atualização otimista
     setEmails((prev) =>
       prev.map((e) => (e.id === id ? { ...e, status: novoStatus } : e))
     );
@@ -74,7 +79,6 @@ export default function KanbanBoard({ emailsIniciais }: Props) {
     try {
       await api.alterarStatus(id, novoStatus);
     } catch {
-      // Reverte em caso de erro
       setEmails((prev) =>
         prev.map((e) => (e.id === id ? { ...e, status: email.status } : e))
       );
@@ -105,7 +109,6 @@ export default function KanbanBoard({ emailsIniciais }: Props) {
 
         <div className="flex-1" />
 
-        {/* Toast de mensagem */}
         {mensagem && (
           <span className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-1">
             {mensagem}
@@ -137,6 +140,24 @@ export default function KanbanBoard({ emailsIniciais }: Props) {
           <RefreshCw size={14} className={sincronizando ? 'animate-spin' : ''} />
           {sincronizando ? 'Sincronizando...' : 'Sincronizar'}
         </button>
+
+        {/* Usuário + Logout */}
+        {user && (
+          <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+              <User size={14} className="text-gray-400" />
+              <span className="max-w-32 truncate">{user.nome}</span>
+            </div>
+            <button
+              onClick={logout}
+              title="Sair"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg text-sm transition-colors"
+            >
+              <LogOut size={14} />
+              Sair
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Painel de filtros */}
@@ -244,7 +265,6 @@ export default function KanbanBoard({ emailsIniciais }: Props) {
         )}
       </div>
 
-      {/* Modal de detalhe */}
       {emailSelecionado !== null && (
         <EmailDetailModal
           emailId={emailSelecionado}
