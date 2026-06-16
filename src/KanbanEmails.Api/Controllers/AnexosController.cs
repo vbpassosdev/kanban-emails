@@ -1,5 +1,6 @@
 using KanbanEmails.Application.DTOs;
 using KanbanEmails.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KanbanEmails.Api.Controllers;
@@ -10,6 +11,7 @@ namespace KanbanEmails.Api.Controllers;
 [ApiController]
 [Route("api")]
 [Produces("application/json")]
+[Authorize]
 public class AnexosController(IEmailAnexoRepository anexoRepository) : ControllerBase
 {
     /// <summary>
@@ -46,10 +48,16 @@ public class AnexosController(IEmailAnexoRepository anexoRepository) : Controlle
         var anexo = await anexoRepository.ObterPorIdAsync(id, ct);
         if (anexo is null) return NotFound();
 
-        if (!System.IO.File.Exists(anexo.CaminhoArquivo))
+        var baseDir = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "storage", "email-anexos"));
+        var fullPath = Path.GetFullPath(anexo.CaminhoArquivo);
+
+        if (!fullPath.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { mensagem = "Caminho de arquivo inválido." });
+
+        if (!System.IO.File.Exists(fullPath))
             return NotFound(new { mensagem = "Arquivo não encontrado no disco." });
 
-        var stream = System.IO.File.OpenRead(anexo.CaminhoArquivo);
+        var stream = System.IO.File.OpenRead(fullPath);
         var mimeType = anexo.MimeType ?? "application/octet-stream";
         return File(stream, mimeType, anexo.NomeArquivo);
     }

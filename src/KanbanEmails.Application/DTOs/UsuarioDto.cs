@@ -46,7 +46,13 @@ public record LoginDto(
     string Email,
     string Senha);
 
+public record LoginUsuarioDto(
+    int Id,
+    string Nome,
+    string Email,
+    bool Ativo);
+
 public record LoginResponseDto(
     string Token,
     DateTime Expiracao,
-    UsuarioDto Usuario);
+    LoginUsuarioDto Usuario);

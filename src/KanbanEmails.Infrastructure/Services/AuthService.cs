@@ -4,29 +4,41 @@ using System.Text;
 using KanbanEmails.Application.DTOs;
 using KanbanEmails.Application.Interfaces;
 using KanbanEmails.Domain.Interfaces;
-using KanbanEmails.Infrastructure.Security;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace KanbanEmails.Infrastructure.Services;
 
-public class AuthService(IUsuarioRepository repository, IConfiguration configuration) : IAuthService
+public class AuthService(
+    IUsuarioRepository repository,
+    IConfiguration configuration,
+    ILogger<AuthService> logger) : IAuthService
 {
     public async Task<LoginResponseDto?> LoginAsync(LoginDto dto, CancellationToken ct = default)
     {
         var usuario = await repository.ObterPorEmailAsync(dto.Email, ct);
 
         if (usuario is null || !usuario.Ativo)
+        {
+            logger.LogWarning("Tentativa de login falhou: usuário não encontrado ou inativo — {Email}", dto.Email);
             return null;
+        }
 
         if (!BCrypt.Net.BCrypt.Verify(dto.Senha, usuario.SenhaHash))
+        {
+            logger.LogWarning("Tentativa de login falhou: senha incorreta — {Email}", dto.Email);
             return null;
+        }
 
         var jwtSettings = configuration.GetSection("Jwt");
-        var secret = jwtSettings["Secret"]!;
-        var issuer = jwtSettings["Issuer"]!;
-        var audience = jwtSettings["Audience"]!;
-        var expiracaoHoras = int.Parse(jwtSettings["ExpiracaoHoras"] ?? "8");
+        var secret = jwtSettings["Secret"]
+            ?? throw new InvalidOperationException("Jwt:Secret não configurado.");
+        var issuer = jwtSettings["Issuer"]
+            ?? throw new InvalidOperationException("Jwt:Issuer não configurado.");
+        var audience = jwtSettings["Audience"]
+            ?? throw new InvalidOperationException("Jwt:Audience não configurado.");
+        var expiracaoHoras = int.TryParse(jwtSettings["ExpiracaoHoras"], out var h) ? h : 8;
 
         var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
@@ -49,20 +61,11 @@ public class AuthService(IUsuarioRepository repository, IConfiguration configura
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-        var usuarioDto = new UsuarioDto(
-            usuario.Id, usuario.Nome, usuario.Email, usuario.Ativo,
-            usuario.DataCriacao, usuario.DataAtualizacao,
-            usuario.ConfiguracaoEmail is null ? null : new ConfiguracaoEmailDto(
-                usuario.ConfiguracaoEmail.Id,
-                usuario.ConfiguracaoEmail.Host,
-                usuario.ConfiguracaoEmail.Porta,
-                usuario.ConfiguracaoEmail.UsarSsl,
-                usuario.ConfiguracaoEmail.EmailUsuario,
-                usuario.ConfiguracaoEmail.Pasta,
-                usuario.ConfiguracaoEmail.IntervaloMinutos,
-                usuario.ConfiguracaoEmail.DataCriacao,
-                usuario.ConfiguracaoEmail.DataAtualizacao));
+        logger.LogInformation("Login realizado com sucesso — {Email} (Id: {Id})", usuario.Email, usuario.Id);
 
-        return new LoginResponseDto(tokenString, expiracao, usuarioDto);
+        return new LoginResponseDto(
+            tokenString,
+            expiracao,
+            new LoginUsuarioDto(usuario.Id, usuario.Nome, usuario.Email, usuario.Ativo));
     }
 }

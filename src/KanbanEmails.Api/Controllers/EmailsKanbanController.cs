@@ -1,5 +1,6 @@
 using KanbanEmails.Application.DTOs;
 using KanbanEmails.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KanbanEmails.Api.Controllers;
@@ -10,6 +11,7 @@ namespace KanbanEmails.Api.Controllers;
 [ApiController]
 [Route("api/emails-kanban")]
 [Produces("application/json")]
+[Authorize]
 public class EmailsKanbanController(
     IEmailKanbanService service,
     IEmailProcessorService processor) : ControllerBase

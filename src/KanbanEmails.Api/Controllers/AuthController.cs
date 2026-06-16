@@ -2,6 +2,7 @@ using KanbanEmails.Application.DTOs;
 using KanbanEmails.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace KanbanEmails.Api.Controllers;
 
@@ -17,6 +18,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     /// Realiza o login e retorna o token JWT.
     /// </summary>
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     [Consumes("application/json")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

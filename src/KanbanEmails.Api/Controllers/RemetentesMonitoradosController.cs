@@ -1,5 +1,6 @@
 using KanbanEmails.Application.DTOs;
 using KanbanEmails.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KanbanEmails.Api.Controllers;
@@ -10,6 +11,7 @@ namespace KanbanEmails.Api.Controllers;
 [ApiController]
 [Route("api/remetentes-monitorados")]
 [Produces("application/json")]
+[Authorize]
 public class RemetentesMonitoradosController(IRemetenteMonitoradoService service) : ControllerBase
 {
     /// <summary>
