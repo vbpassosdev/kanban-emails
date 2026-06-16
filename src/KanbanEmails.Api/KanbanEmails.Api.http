@@ -1,0 +1,6 @@
+@KanbanEmails.Api_HostAddress = http://localhost:5142
+
+GET {{KanbanEmails.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

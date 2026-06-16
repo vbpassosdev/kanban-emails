@@ -1,0 +1,27 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.log
+
+# Entity Framework migrations (manter código, ignorar runtime)
+# (migrations são mantidas — necessárias para o banco)
+
+# Configurações locais com credenciais
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Armazenamento de anexos
+storage/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/out/
+
+# OS
+.DS_Store
+Thumbs.db

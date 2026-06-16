@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KanbanEmails.Api/KanbanEmails.Api.csproj" />
+    <Project Path="src/KanbanEmails.Application/KanbanEmails.Application.csproj" />
+    <Project Path="src/KanbanEmails.Domain/KanbanEmails.Domain.csproj" />
+    <Project Path="src/KanbanEmails.Infrastructure/KanbanEmails.Infrastructure.csproj" />
+    <Project Path="src/KanbanEmails.Worker/KanbanEmails.Worker.csproj" />
+  </Folder>
+</Solution>
