@@ -1,32 +1,40 @@
 export type StatusKanban =
   | 'Novo'
+  | 'EIdSocketError'
   | 'EmAnalise'
   | 'Desenvolvimento'
   | 'AguardandoCliente'
-  | 'Concluido';
+  | 'Concluido'
+  | 'Corrigido';
 
 export const STATUS_LABELS: Record<StatusKanban, string> = {
   Novo: 'Novo',
+  EIdSocketError: 'EId Socket Error',
   EmAnalise: 'Em Análise',
   Desenvolvimento: 'Desenvolvimento',
   AguardandoCliente: 'Aguardando Cliente',
   Concluido: 'Concluído',
+  Corrigido: 'Corrigido',
 };
 
 export const STATUS_COLORS: Record<StatusKanban, string> = {
   Novo: 'bg-blue-100 border-blue-300',
+  EIdSocketError: 'bg-red-100 border-red-400',
   EmAnalise: 'bg-yellow-100 border-yellow-300',
   Desenvolvimento: 'bg-purple-100 border-purple-300',
   AguardandoCliente: 'bg-orange-100 border-orange-300',
   Concluido: 'bg-green-100 border-green-300',
+  Corrigido: 'bg-teal-100 border-teal-300',
 };
 
 export const STATUS_HEADER_COLORS: Record<StatusKanban, string> = {
   Novo: 'bg-blue-500',
+  EIdSocketError: 'bg-red-600',
   EmAnalise: 'bg-yellow-500',
   Desenvolvimento: 'bg-purple-500',
   AguardandoCliente: 'bg-orange-500',
   Concluido: 'bg-green-500',
+  Corrigido: 'bg-teal-600',
 };
 
 export const COLUNAS: StatusKanban[] = [
@@ -35,6 +43,8 @@ export const COLUNAS: StatusKanban[] = [
   'Desenvolvimento',
   'AguardandoCliente',
   'Concluido',
+  'Corrigido',
+  'EIdSocketError',
 ];
 
 export interface EmailAnexoResumo {
@@ -154,6 +164,23 @@ export interface Usuario {
   dataCriacao: string;
   dataAtualizacao: string | null;
   configuracaoEmail: ConfiguracaoEmail | null;
+}
+
+// Análise
+export interface CategoriaContagem {
+  categoria: string;
+  total: number;
+}
+
+export interface EmpresaAnalise {
+  empresa: string;
+  total: number;
+  categorias: Record<string, number>;
+}
+
+export interface Analise {
+  porCategoria: CategoriaContagem[];
+  porEmpresa: EmpresaAnalise[];
 }
 
 export interface AtualizarUsuarioDto {

@@ -92,4 +92,38 @@ public class EmailsKanbanController(
         var processados = await processor.ProcessarEmailsAsync(ct);
         return Ok(new { mensagem = $"{processados} e-mail(s) novo(s) processado(s).", processados });
     }
+
+    /// <summary>
+    /// Retorna dados agregados de e-mails por categoria e por empresa, para uso em gráficos de análise.
+    /// </summary>
+    [HttpGet("analise")]
+    [ProducesResponseType(typeof(AnaliseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ObterAnalise(CancellationToken ct)
+    {
+        var analise = await service.ObterAnaliseAsync(ct);
+        return Ok(analise);
+    }
+
+    /// <summary>
+    /// Re-parseia os anexos bugreport de e-mails já existentes, populando CorpoHtml e Categoria com os dados extraídos.
+    /// </summary>
+    [HttpPost("reprocessar-bugreports")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ReprocessarBugreports(CancellationToken ct)
+    {
+        var atualizados = await processor.ReprocessarBugreportsAsync(ct);
+        return Ok(new { mensagem = $"{atualizados} e-mail(s) atualizado(s).", atualizados });
+    }
+
+    /// <summary>
+    /// Varre os cards com status Novo e marca como Corrigido aqueles cuja classe de exceção
+    /// já possui um card Concluído — evitando reanálise de erros já resolvidos.
+    /// </summary>
+    [HttpPost("marcar-corrigidos")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> MarcarCorrigidos(CancellationToken ct)
+    {
+        var marcados = await processor.MarcarErrosCorrigidosAsync(ct);
+        return Ok(new { mensagem = $"{marcados} card(s) marcado(s) como Corrigido.", marcados });
+    }
 }

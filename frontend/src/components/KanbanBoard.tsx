@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import Link from 'next/link';
-import { RefreshCw, Search, X, LogOut, User, Settings } from 'lucide-react';
+import { BarChart2, Bug, CheckCheck, RefreshCw, Search, X, LogOut, User, Settings } from 'lucide-react';
 import {
   EmailKanban,
   FiltroEmails,
@@ -22,6 +22,8 @@ export default function KanbanBoard() {
   const [emails, setEmails] = useState<EmailKanban[]>([]);
   const [emailSelecionado, setEmailSelecionado] = useState<number | null>(null);
   const [sincronizando, setSincronizando] = useState(false);
+  const [reprocessando, setReprocessando] = useState(false);
+  const [marcandoCorrigidos, setMarcandoCorrigidos] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [filtro, setFiltro] = useState<FiltroEmails>({});
   const [filtroVisivel, setFiltroVisivel] = useState(false);
@@ -61,6 +63,36 @@ export default function KanbanBoard() {
       setTimeout(() => setMensagem(null), 4000);
     } finally {
       setSincronizando(false);
+    }
+  };
+
+  const marcarCorrigidos = async () => {
+    setMarcandoCorrigidos(true);
+    try {
+      const res = await api.marcarCorrigidos();
+      setMensagem(res.mensagem);
+      await recarregar();
+      setTimeout(() => setMensagem(null), 4000);
+    } catch {
+      setMensagem('Erro ao marcar erros corrigidos.');
+      setTimeout(() => setMensagem(null), 4000);
+    } finally {
+      setMarcandoCorrigidos(false);
+    }
+  };
+
+  const reprocessarBugreports = async () => {
+    setReprocessando(true);
+    try {
+      const res = await api.reprocessarBugreports();
+      setMensagem(res.mensagem);
+      await recarregar();
+      setTimeout(() => setMensagem(null), 4000);
+    } catch {
+      setMensagem('Erro ao reprocessar bugreports.');
+      setTimeout(() => setMensagem(null), 4000);
+    } finally {
+      setReprocessando(false);
     }
   };
 
@@ -116,6 +148,14 @@ export default function KanbanBoard() {
           </span>
         )}
 
+        <Link
+          href="/analise"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+        >
+          <BarChart2 size={14} />
+          Análise
+        </Link>
+
         <button
           onClick={() => setFiltroVisivel((v) => !v)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -135,11 +175,31 @@ export default function KanbanBoard() {
 
         <button
           onClick={sincronizar}
-          disabled={sincronizando}
+          disabled={sincronizando || reprocessando}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <RefreshCw size={14} className={sincronizando ? 'animate-spin' : ''} />
           {sincronizando ? 'Sincronizando...' : 'Sincronizar'}
+        </button>
+
+        <button
+          onClick={reprocessarBugreports}
+          disabled={reprocessando || sincronizando || marcandoCorrigidos}
+          title="Re-parseia os anexos .txt de e-mails existentes para extrair categoria e corpo HTML do bugreport"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-700 hover:bg-red-800 disabled:opacity-60 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          <Bug size={14} className={reprocessando ? 'animate-pulse' : ''} />
+          {reprocessando ? 'Reprocessando...' : 'Reprocessar'}
+        </button>
+
+        <button
+          onClick={marcarCorrigidos}
+          disabled={marcandoCorrigidos || sincronizando || reprocessando}
+          title="Varre os cards Novo e marca como Corrigido aqueles cuja classe de exceção já tem um card Concluído"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          <CheckCheck size={14} className={marcandoCorrigidos ? 'animate-pulse' : ''} />
+          {marcandoCorrigidos ? 'Verificando...' : 'Marcar Corrigidos'}
         </button>
 
         {/* Usuário + Logout */}

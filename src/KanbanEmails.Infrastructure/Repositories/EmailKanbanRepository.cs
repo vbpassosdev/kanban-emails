@@ -1,4 +1,5 @@
 using KanbanEmails.Domain.Entities;
+using KanbanEmails.Domain.Enums;
 using KanbanEmails.Domain.Interfaces;
 using KanbanEmails.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -53,4 +54,24 @@ public class EmailKanbanRepository(KanbanEmailsDbContext context) : IEmailKanban
 
     public async Task SalvarAsync(CancellationToken ct = default)
         => await context.SaveChangesAsync(ct);
+
+    public async Task<bool> ExisteErroCorrigidoAsync(string classeExcecao, CancellationToken ct = default)
+        => await context.EmailsKanban.AnyAsync(
+            e => e.Status == StatusKanban.Concluido
+              && e.Resumo != null
+              && e.Resumo.StartsWith(classeExcecao + ":"),
+            ct);
+
+    public async Task<HashSet<string>> ObterClassesExcecaoConcluidasAsync(CancellationToken ct = default)
+    {
+        var resumos = await context.EmailsKanban
+            .Where(e => e.Status == StatusKanban.Concluido && e.Resumo != null)
+            .Select(e => e.Resumo!)
+            .ToListAsync(ct);
+
+        return resumos
+            .Select(r => { var i = r.IndexOf(':'); return i > 0 ? r[..i] : null; })
+            .Where(c => c is not null)
+            .ToHashSet()!;
+    }
 }

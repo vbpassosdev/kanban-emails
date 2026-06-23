@@ -1,5 +1,6 @@
 import {
   AlterarSenhaDto,
+  Analise,
   AtualizarRemetenteDto,
   AtualizarUsuarioDto,
   CriarRemetenteDto,
@@ -70,7 +71,7 @@ export const api = {
     if (filtro?.status) params.set('status', filtro.status);
     if (filtro?.dataInicio) params.set('dataInicio', filtro.dataInicio);
     if (filtro?.dataFim) params.set('dataFim', filtro.dataFim);
-    params.set('tamanhoPagina', '200');
+    params.set('tamanhoPagina', '1000');
     const qs = params.toString();
     return fetchJson<EmailKanban[]>(`/api/emails-kanban${qs ? `?${qs}` : ''}`);
   },
@@ -90,8 +91,21 @@ export const api = {
     return fetchJson(`/api/emails-kanban/sync`, { method: 'POST' });
   },
 
+  obterAnalise(): Promise<Analise> {
+    return fetchJson<Analise>('/api/emails-kanban/analise');
+  },
+
+  reprocessarBugreports(): Promise<{ mensagem: string; atualizados: number }> {
+    return fetchJson('/api/emails-kanban/reprocessar-bugreports', { method: 'POST' });
+  },
+
+  marcarCorrigidos(): Promise<{ mensagem: string; marcados: number }> {
+    return fetchJson('/api/emails-kanban/marcar-corrigidos', { method: 'POST' });
+  },
+
   downloadAnexoUrl(id: number): string {
-    return `${BASE_URL}/api/anexos/${id}/download`;
+    // URL relativa passa pelo proxy Next.js que injeta o Bearer token via cookie
+    return `/api/anexos/${id}/download`;
   },
 
   // Remetentes Monitorados

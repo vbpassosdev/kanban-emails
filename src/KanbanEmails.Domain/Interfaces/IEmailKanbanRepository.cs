@@ -11,6 +11,8 @@ public interface IEmailKanbanRepository
     Task<IEnumerable<EmailKanban>> ListarAsync(FiltroEmailKanban filtro, CancellationToken ct = default);
     Task AdicionarAsync(EmailKanban email, CancellationToken ct = default);
     Task SalvarAsync(CancellationToken ct = default);
+    Task<bool> ExisteErroCorrigidoAsync(string classeExcecao, CancellationToken ct = default);
+    Task<HashSet<string>> ObterClassesExcecaoConcluidasAsync(CancellationToken ct = default);
 }
 
 public record FiltroEmailKanban(
