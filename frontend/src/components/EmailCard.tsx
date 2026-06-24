@@ -1,13 +1,15 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import { Paperclip, User, Calendar } from 'lucide-react';
-import { EmailKanban } from '@/types';
+import { Paperclip, User, Calendar, ArrowRightLeft } from 'lucide-react';
+import { EmailKanban, StatusKanban, STATUS_LABELS, COLUNAS } from '@/types';
 
 interface Props {
   email: EmailKanban;
   index: number;
   onClick: (email: EmailKanban) => void;
+  onStatusChange: (email: EmailKanban, newStatus: StatusKanban) => void;
 }
 
 function formatarData(iso: string) {
@@ -20,7 +22,23 @@ function formatarData(iso: string) {
   });
 }
 
-export default function EmailCard({ email, index, onClick }: Props) {
+export default function EmailCard({ email, index, onClick, onStatusChange }: Props) {
+  const [menuAberto, setMenuAberto] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuAberto) return;
+    function fechar(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuAberto(false);
+      }
+    }
+    document.addEventListener('mousedown', fechar);
+    return () => document.removeEventListener('mousedown', fechar);
+  }, [menuAberto]);
+
+  const outrosColunas = COLUNAS.filter((s) => s !== email.status);
+
   return (
     <Draggable draggableId={String(email.id)} index={index}>
       {(provided, snapshot) => (
@@ -66,12 +84,47 @@ export default function EmailCard({ email, index, onClick }: Props) {
                 {email.categoria}
               </span>
             )}
-            {email.quantidadeAnexos > 0 && (
-              <div className="flex items-center gap-1 text-xs text-gray-500 ml-auto">
-                <Paperclip size={11} />
-                <span>{email.quantidadeAnexos}</span>
+            <div className="flex items-center gap-2 ml-auto">
+              {email.quantidadeAnexos > 0 && (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Paperclip size={11} />
+                  <span>{email.quantidadeAnexos}</span>
+                </div>
+              )}
+
+              {/* Botão mover para */}
+              <div ref={menuRef} className="relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  title="Mover para..."
+                  onClick={() => setMenuAberto((v) => !v)}
+                  className="flex items-center gap-0.5 text-xs text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded px-1 py-0.5 transition-colors"
+                >
+                  <ArrowRightLeft size={11} />
+                </button>
+
+                {menuAberto && (
+                  <div className="absolute right-0 bottom-6 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-36">
+                    <p className="text-xs text-gray-400 px-3 py-1 font-medium border-b border-gray-100">
+                      Mover para...
+                    </p>
+                    {outrosColunas.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          setMenuAberto(false);
+                          onStatusChange(email, s);
+                        }}
+                        className="w-full text-left text-xs px-3 py-1.5 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      >
+                        {STATUS_LABELS[s]}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}

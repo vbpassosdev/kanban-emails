@@ -96,26 +96,28 @@ export default function KanbanBoard() {
     }
   };
 
+  const moverEmail = async (email: EmailKanban, novoStatus: StatusKanban) => {
+    if (email.status === novoStatus) return;
+    setEmails((prev) =>
+      prev.map((e) => (e.id === email.id ? { ...e, status: novoStatus } : e))
+    );
+    try {
+      await api.alterarStatus(email.id, novoStatus);
+    } catch {
+      setEmails((prev) =>
+        prev.map((e) => (e.id === email.id ? { ...e, status: email.status } : e))
+      );
+    }
+  };
+
   const onDragEnd = async (result: DropResult) => {
     const { draggableId, destination } = result;
     if (!destination) return;
-
     const novoStatus = destination.droppableId as StatusKanban;
     const id = parseInt(draggableId, 10);
     const email = emails.find((e) => e.id === id);
-    if (!email || email.status === novoStatus) return;
-
-    setEmails((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, status: novoStatus } : e))
-    );
-
-    try {
-      await api.alterarStatus(id, novoStatus);
-    } catch {
-      setEmails((prev) =>
-        prev.map((e) => (e.id === id ? { ...e, status: email.status } : e))
-      );
-    }
+    if (!email) return;
+    await moverEmail(email, novoStatus);
   };
 
   const aplicarFiltro = async (e: React.FormEvent) => {
@@ -326,6 +328,7 @@ export default function KanbanBoard() {
                   status={status}
                   emails={emailsPorColuna(status)}
                   onCardClick={(e) => setEmailSelecionado(e.id)}
+                  onStatusChange={moverEmail}
                 />
               ))}
             </div>
